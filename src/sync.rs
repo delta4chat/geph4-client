@@ -60,6 +60,10 @@ pub async fn sync_json(opt: SyncOpt) -> anyhow::Result<String> {
             load: exit.load,
         })
         .collect_vec();
+
+    let exit = binder_client.get_closest_exit("").await?;
+    binder_client.get_bridges_v2(&exit.hostname, true).await?;
+
     Ok(format!(
         "{{\"exits\": {}, \"user\": {}, \"version\": {:?}}}",
         serde_json::to_string(&exits)?,
