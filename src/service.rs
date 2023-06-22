@@ -1,12 +1,12 @@
-use std::ffi::OsString;
+use std::{ffi::OsString, time::Duration};
 use windows_service::{
     service::{
         ServiceAccess, ServiceControl, ServiceErrorControl, ServiceInfo, ServiceStartType,
-        ServiceType,
+        ServiceType, ServiceStatus, ServiceState, ServiceControlAccept, ServiceExitCode,
     },
     service_control_handler::{self, ServiceControlHandlerResult},
     service_dispatcher,
-    service_manager::{ServiceManager, ServiceManagerAccess},
+    service_manager::{ServiceManager, ServiceManagerAccess}, define_windows_service,
 };
 
 const SERVICE_NAME: &str = "Geph";
@@ -17,9 +17,10 @@ define_windows_service!(ffi_service_main, my_service_main);
 
 fn my_service_main(args: Vec<OsString>) -> anyhow::Result<()> {
     if let Err(e) = run_service(args) {}
+    Ok(())
 }
 
-fn run_service(arguments: Vec<OsString>) -> windows_service::Result<()> {
+fn run_service(args: Vec<OsString>) -> windows_service::Result<()> {
     let event_handler = move |control_event| -> ServiceControlHandlerResult {
         match control_event {
             ServiceControl::Stop => ServiceControlHandlerResult::NoError,
@@ -51,13 +52,14 @@ pub fn start() -> windows_service::Result<()> {
     Ok(())
 }
 
-pub fn install_service() -> windows_service::Result {
-    let manager_access = SeviceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE;
-    let service_manager = ServiceManager::local_computer(None::<&str>, manager_access);
+pub fn install_service() -> windows_service::Result<()> {
+    let manager_access = ServiceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE;
+    let service_manager = ServiceManager::local_computer(None::<&str>, manager_access)?;
 
     let service_binary_path = std::env::current_exe()
         .unwrap()
         .with_file_name("geph4-client.exe");
+    eprintln!("binary path: {:?}", service_binary_path);
 
     let service_info = ServiceInfo {
         name: OsString::from(SERVICE_NAME),
@@ -74,7 +76,7 @@ pub fn install_service() -> windows_service::Result {
     let service = service_manager.create_service(&service_info, ServiceAccess::CHANGE_CONFIG)?;
     service.set_description(
         "Geph connects you with the censorship-free Internet, even when nothing else works.",
-    );
+    )?;
 
     Ok(())
 }
