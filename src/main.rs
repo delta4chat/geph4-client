@@ -1,9 +1,12 @@
 use binary_search::Direction;
 use geph4client::dispatch;
 
-use crate::{
-    config::{Opt, CONFIG},
-};
+mod binderproxy;
+mod config;
+mod debugpack;
+mod fronts;
+mod main_bridgetest;
+mod sync;
 
 #[cfg(windows)]
 mod service;

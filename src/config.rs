@@ -1,16 +1,15 @@
-use std::{
-    path::PathBuf,
-    str::FromStr,
-    sync::atomic::{AtomicUsize, Ordering},
-    time::{SystemTime, UNIX_EPOCH},
-};
-
 use crate::fronts::parse_fronts;
 use anyhow::Context;
 use bytes::Bytes;
 use geph4_protocol::binder::client::{CachedBinderClient, DynBinderClient};
 use geph4_protocol::binder::protocol::{BinderClient, Credentials};
 use once_cell::sync::{Lazy, OnceCell};
+use std::{
+    path::PathBuf,
+    str::FromStr,
+    sync::atomic::{AtomicUsize, Ordering},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use serde::{Deserialize, Serialize};
 use std::net::{Ipv4Addr, SocketAddr};
