@@ -26,6 +26,10 @@ pub mod ios;
 
 mod debugpack;
 mod main_bridgetest;
+
+#[cfg(windows)]
+mod service;
+
 mod sync;
 
 #[global_allocator]
@@ -50,6 +54,7 @@ pub fn dispatch() -> anyhow::Result<()> {
             Opt::BinderProxy(opt) => binderproxy::main_binderproxy(opt.clone()).await,
             Opt::BridgeTest(opt) => main_bridgetest::main_bridgetest(opt.clone()).await,
             Opt::Debugpack(opt) => debugpack::export_debugpak(&opt.export_to),
+            Opt::Install(_) => anyhow::bail!("Should be unreachable"),
         }
     })
 }
@@ -100,6 +105,7 @@ fn config_melprot_cache() -> anyhow::Result<()> {
         Opt::Sync(opt) => Some(&opt.auth.credential_cache),
         Opt::BinderProxy(_) => None,
         Opt::Debugpack(_) => None,
+        Opt::Install(_) => None,
     };
     if let Some(mut path) = path.cloned() {
         path.push("melprot");

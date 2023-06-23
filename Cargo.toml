@@ -5,10 +5,6 @@ authors = ["nullchinchilla <nullchinchilla@pm.me>"]
 edition = "2021"
 description="Geph client"
 license="GPL-3.0-only"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[patch.crates-io]
 # sosistab2={path="../sosistab2"}
 # melprot={path="../../Mel/melprot"}
 

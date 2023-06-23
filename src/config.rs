@@ -31,11 +31,18 @@ pub static CONFIG: Lazy<Opt> = Lazy::new(|| INIT_CONFIG.get_or_init(Opt::from_ar
 #[derive(Debug, StructOpt, Deserialize, Serialize, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum Opt {
+    Install(InstallOpt),
     Connect(ConnectOpt),
     BridgeTest(crate::main_bridgetest::BridgeTestOpt),
     Sync(crate::sync::SyncOpt),
     BinderProxy(crate::binderproxy::BinderProxyOpt),
     Debugpack(crate::debugpack::DebugPackOpt),
+}
+
+#[derive(Debug, StructOpt, Clone, Deserialize, Serialize)]
+pub struct InstallOpt {
+    #[structopt(flatten)]
+    pub common: CommonOpt,
 }
 
 #[derive(Debug, StructOpt, Clone, Deserialize, Serialize)]
