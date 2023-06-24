@@ -1,15 +1,9 @@
 use binary_search::Direction;
-use geph4client::dispatch;
-
-mod binderproxy;
-mod config;
-mod debugpack;
-mod fronts;
-mod main_bridgetest;
-mod sync;
-
-#[cfg(windows)]
-mod service;
+use geph4client::{
+    dispatch,
+    config::{CONFIG, Opt},
+    service,
+};
 
 #[cfg(not(windows))]
 fn main() -> anyhow::Result<()> {
@@ -28,6 +22,8 @@ fn main() -> anyhow::Result<()> {
 
 #[cfg(windows)]
 fn main() -> anyhow::Result<()> {
+    use std::ops::Deref;
+
     let ((largest_low, _), _) = binary_search::binary_search((1, ()), (65536, ()), |lim| {
         if rlimit::utils::increase_nofile_limit(lim).unwrap_or_default() >= lim {
             Direction::Low(())

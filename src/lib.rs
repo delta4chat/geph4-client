@@ -1,7 +1,7 @@
 use std::{io::Write, sync::atomic::AtomicUsize};
 use std::{ops::Deref, sync::atomic::Ordering};
 
-mod config;
+pub mod config;
 mod fronts;
 
 mod melprot_cache;
@@ -28,7 +28,7 @@ mod debugpack;
 mod main_bridgetest;
 
 #[cfg(windows)]
-mod service;
+pub mod service;
 
 mod sync;
 

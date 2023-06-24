@@ -24,7 +24,7 @@ fn my_service_main(args: Vec<OsString>) -> anyhow::Result<()> {
 }
 
 fn run_service(args: Vec<OsString>) -> windows_service::Result<()> {
-    println!("Running service");
+    eprintln!("Running service");
     let (shutdown_tx, shutdown_rx) = mpsc::channel();
     let event_handler = move |control_event| -> ServiceControlHandlerResult {
         match control_event {
@@ -36,9 +36,8 @@ fn run_service(args: Vec<OsString>) -> windows_service::Result<()> {
             _ => ServiceControlHandlerResult::NotImplemented,
         }
     };
-println!("Before retrieving status handle");
     let status_handle = service_control_handler::register(SERVICE_NAME, event_handler)?;
-println!("handle retrieved");
+
     status_handle.set_service_status(ServiceStatus {
         service_type: SERVICE_TYPE,
         current_state: ServiceState::Running,
@@ -68,26 +67,23 @@ println!("handle retrieved");
 }
 
 pub fn start() -> windows_service::Result<()> {
-    println!("Dispatching");
     match service_dispatcher::start(SERVICE_NAME, ffi_service_main) {
-        Ok(_) => println!("RETURNED"),
-        Err(e) => println!("er: {:?}", e.source()),
+        Ok(_) => (),
+        Err(e) => println!("error: {:?}", e.source()),
     };
-    println!("Dispatched");
 
     Ok(())
 }
 
 pub fn install() -> windows_service::Result<()> {
-    println!("Intitiating service install");
+    eprintln!("Intitiating service install");
     let manager_access = ServiceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE;
-    println!("accessed manager");
     let service_manager = ServiceManager::local_computer(None::<&str>, manager_access);
     match &service_manager {
-        Ok(_) => println!("OK USA"),
-        Err(e) => println!("NAH CA {:?}", e.source()),
+        Ok(_) => (),
+        Err(e) => println!("Error instantiating service manager: {:?}", e.source()),
     }
-    println!("served manager");
+
     let service_binary_path = std::env::current_exe()
         .expect("Error retreiving service path")
         .with_file_name("geph4-client.exe");
