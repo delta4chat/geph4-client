@@ -1,9 +1,12 @@
+use crate::config;
 use crate::fronts::parse_fronts;
 use anyhow::Context;
 use bytes::Bytes;
 use geph4_protocol::binder::client::{CachedBinderClient, DynBinderClient};
 use geph4_protocol::binder::protocol::{BinderClient, Credentials};
 use once_cell::sync::{Lazy, OnceCell};
+use std::fs::File;
+use std::io::Read;
 use std::{
     path::PathBuf,
     str::FromStr,
@@ -36,6 +39,22 @@ pub enum Opt {
     Sync(crate::sync::SyncOpt),
     BinderProxy(crate::binderproxy::BinderProxyOpt),
     Debugpack(crate::debugpack::DebugPackOpt),
+}
+
+impl Opt {
+    pub fn from_file() -> anyhow::Result<Opt> {
+        let config_file_path = dirs::config_dir()
+            .context("Unable to read config file path")?
+            .join("geph4-credentials\\opt.json");
+        let mut config_file = File::open(config_file_path)?;
+
+        let mut contents = String::new();
+        config_file.read_to_string(&mut contents)?;
+
+        let cmd_vec: Vec<&str> = contents.split(" ").collect();
+
+        Ok(Opt::from_iter_safe(cmd_vec.into_iter())?)
+    }
 }
 
 #[derive(Debug, StructOpt, Clone, Deserialize, Serialize)]

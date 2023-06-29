@@ -12,7 +12,7 @@ use windows_service::{
 use crate::dispatch;
 
 const SERVICE_NAME: &str = "Geph";
-const SERVICE_DISPLAY_NAME: &str = "Geph";
+const SERVICE_DISPLAY_NAME: &str = "Geph Daemon";
 const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
 lazy_static::lazy_static! {
     static ref SERVICE_ACCESS: ServiceAccess = ServiceAccess::QUERY_CONFIG
@@ -23,14 +23,14 @@ lazy_static::lazy_static! {
 
 define_windows_service!(ffi_service_main, my_service_main);
 
-fn my_service_main(args: Vec<OsString>) -> anyhow::Result<()> {
-    if let Err(e) = run_service(args) {
-        eprintln!("Error running service: {}", e);
+fn my_service_main(args: Vec<OsString>) {
+    if let Err(e) = start_service() {
+        eprintln!("Error running service: {:?}", e.source());
     }
-    Ok(())
 }
 
-fn run_service(args: Vec<OsString>) -> windows_service::Result<()> {
+// _args: Vec<OsString>
+fn start_service() -> windows_service::Result<()> {
     eprintln!("Running service");
     let (shutdown_tx, shutdown_rx) = mpsc::channel();
     let event_handler = move |control_event| -> ServiceControlHandlerResult {
@@ -76,7 +76,7 @@ fn run_service(args: Vec<OsString>) -> windows_service::Result<()> {
 pub fn start() -> windows_service::Result<()> {
     match service_dispatcher::start(SERVICE_NAME, ffi_service_main) {
         Ok(_) => (),
-        Err(e) => println!("error: {:?}", e.source()),
+        Err(e) => println!("Service dispatcher error: {:?}", e.source()),
     };
 
     Ok(())
@@ -92,8 +92,7 @@ pub fn install() -> windows_service::Result<()> {
     }
 
     let service_binary_path = std::env::current_exe()
-        .expect("Error retreiving service path")
-        .with_file_name("geph4-client.exe");
+        .expect("Error retrieving service path");
 
     let service_info = ServiceInfo {
         name: OsString::from(SERVICE_NAME),
@@ -102,14 +101,7 @@ pub fn install() -> windows_service::Result<()> {
         start_type: ServiceStartType::OnDemand,
         error_control: ServiceErrorControl::Normal,
         executable_path: service_binary_path,
-        launch_arguments: vec![
-            OsString::from("sync"),
-            OsString::from("auth-password"),
-            OsString::from("--username"),
-            OsString::from("public5"),
-            OsString::from("--password"),
-            OsString::from("public5")
-        ],
+        launch_arguments: vec![],
         dependencies: vec![],
         account_name: None,
         account_password: None,
@@ -146,5 +138,6 @@ pub fn install() -> windows_service::Result<()> {
         "Geph connects you with the censorship-free Internet, even when nothing else works.",
     )?;
 
+    eprint!("Service successfully installed!");
     Ok(())
 }
