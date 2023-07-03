@@ -2,11 +2,14 @@ mod gatherer;
 
 use std::{
     convert::Infallible,
+    fs::File,
+    io::Read,
     sync::atomic::{AtomicU64, Ordering},
     thread::JoinHandle,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use anyhow::Context;
 use async_trait::async_trait;
 use itertools::Itertools;
 use smol_str::SmolStr;
@@ -28,7 +31,7 @@ pub static STATS_THREAD: Lazy<JoinHandle<Infallible>> = Lazy::new(|| {
         let server = tiny_http::Server::http(CONNECT_CONFIG.stats_listen).unwrap();
         for mut request in server.incoming_requests() {
             smolscale::spawn(async move {
-                if let Ok(key) = std::env::var("GEPH_RPC_KEY") {
+                if let Ok(key) = get_rpc_key() {
                     if !request.url().contains(&key) {
                         anyhow::bail!("missing rpc key")
                     }
@@ -45,6 +48,15 @@ pub static STATS_THREAD: Lazy<JoinHandle<Infallible>> = Lazy::new(|| {
         }
     })
 });
+
+fn get_rpc_key() -> anyhow::Result<String> {
+    let key_dir = dirs::config_dir().context("Unable to get config dir")?;
+    let key_path = key_dir.join("rpc_key");
+    let mut key_file = File::open(key_path)?;
+    let mut contents = String::new();
+    key_file.read_to_string(&mut contents)?;
+    Ok(contents)
+}
 
 /// Basic tunnel statistics.
 #[derive(Clone, Debug, Serialize, Deserialize)]
