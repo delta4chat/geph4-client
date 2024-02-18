@@ -146,17 +146,22 @@ winapi = { version = "0.3.9", features = ["minwindef", "mmsystem", "timeapi"] }
 
 [profile.dev]
 panic = "unwind"
-opt-level = 1
-
-
-[profile.release-dbg]
-inherits = "dev"
-opt-level = 3
+opt-level = 2
+lto = "off"
+#strip = "none"
+codegen-units = 256
+overflow-checks = true
+debug-assertions = true
+debug = "limited"
+incremental = true
 
 [profile.release]
-panic = "abort"
+panic = "unwind"
 opt-level = 3
-debug = 0
-# lto = true
+lto = true
 strip = true
 codegen-units = 1
+overflow-checks = true
+debug-assertions = false
+debug = 1
+incremental = false
